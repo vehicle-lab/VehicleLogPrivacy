@@ -1,1 +1,1 @@
-# VehicleLogPrivacy
+# VLogInsight
