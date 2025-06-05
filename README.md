@@ -12,6 +12,6 @@ Here we present the detailed private data leakage detection result in the in-veh
 
 ## VLogInsight
 
-Here we present the implementation of VLogInsight.
+Here we present the implementation and usage instructions of VLogInsight.
 
 
