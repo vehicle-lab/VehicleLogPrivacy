@@ -1,143 +1,65 @@
-# FlowDroid Data Flow Analysis Tool
+## 项目结构
 
-This repository hosts the FlowDroid data flow analysis tool. FlowDroid statically computes data flows in Android apps and Java programs.
-Its goal is to provide researchers and practitioners with a tool and library on which they can base their own research projects and
-product implementations. We are happy to see that FlowDroid is now widely used in academia as well as industry.
+* `scanner`：该模块通过使用Soot框架提供的API来扩展FlowDroid功能，对打印日志语句中的变量进行数据流分析，追踪每个变量所经过的函数并记录。最终输出一个json文件，其中包含所提取出每条日志的类名`log_classname`、字符串`log_string`、所在类名`classname`、所在函数名`function_name`、日志内参数流经的函数数组`from`。
 
-## Obtaining The Tool
+* `checker`：该模块读取大模型分析提取敏感信息的结果，通过静态分析获取数据流经的函数，按照函数方法签名获取FlowDroid框架所解析出的函数方法体（是一种字节码指令格式），然后将该方法体输入给大模型来判断是否进行了脱敏操作。最终输出一个json文件，其中包含所提取出每条日志的类名`log_classname`、字符串`log_string`、所在类名`classname`、所在函数名`function_name`、日志内参数流经的函数数组`from`，是否为敏感信息`is_sensitive`，敏感信息key`sensitive_key`、是否经过加密或脱敏`isEncrypted`。
+* `soot-infoflow`：这是 FlowDroid 的核心数据流分析引擎，独立于 Android。 它实现了 IFDS/IDE 数据流分析框架（使用 Heros），并定义了源（Sources）、汇（Sinks）、污点传播规则等核心概念。
+* `soot-infoflow-android`：这个模块构建在`soot-infoflow`之上，专门处理Android应用的复杂特性。它包含Android生命周期的建模、四大组件的处理、回调机制、资源访问、权限检查等。
+* `soot-infoflow-cmd`：提供命令行接口(CLI)来运行FlowDroid。
+* `soot-infoflow-summaries`：包含用于常见库（特别是 Android SDK）的预计算或配置的数据流摘要（Summaries）。
 
-You can either build FlowDroid on your own using Maven, or you can download a release from here on Github.
+## 运行环境
 
-### Downloading The Release Via Maven
-
-FlowDroid can now be found on <a href="https://mvnrepository.com/artifact/de.fraunhofer.sit.sse.flowdroid">Maven Central</a>.
-In order to use FlowDroid in your Maven build, include the following in your ```pom.xml``` file.
-We recommend using the latest and greatest version unless you have a specific
-issue that prevents you from doing so. In that case, please let us know (see contact below).
-```
-    <dependencies>
-        <dependency>
-            <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
-            <artifactId>soot-infoflow</artifactId>
-            <version>2.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
-            <artifactId>soot-infoflow-summaries</artifactId>
-            <version>2.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>de.fraunhofer.sit.sse.flowdroid</groupId>
-            <artifactId>soot-infoflow-android</artifactId>
-            <version>2.12.0</version>
-        </dependency>
-    </dependencies>
-```
-
-For a quick start with FlowDroid, look at "Using The Data Flow Tracker" below. If you only want to use the command-line tool,
-all you need is the "soot-infoflow-cmd-jar-with-dependencies.jar" file.
-
-### Downloading The Release Via GitHub
-
-The <a href="https://github.com/secure-software-engineering/FlowDroid/releases">Release Page</a> contains all pre-built JAR
-files for each release that we officially publish. We recommend using the latest and greatest version unless you have a specific
-issue that prevents you from doing so. In that case, please let us know (see contact below).
-
-For a quick start with FlowDroid, look at "Using The Data Flow Tracker" below. If you only want to use the command-line tool,
-all you need is the "soot-infoflow-cmd-jar-with-dependencies.jar" file.
-
-### Building The Tool With Maven
-
-Requirements:
-* JDK 11 or above
+* Java 18+
 * Maven
-* The current snapshot of <a href="https://github.com/soot-oss/soot">Soot</a> installed
 
-At the first time, FlowDroid needs to be built from the parent module, i.e. the project's root folder. The full test
-suite takes around 30 minutes, so we recommend to disable the tests when building:
-```shell
-mvn install -DskipTests
-```
+## 启动方式
 
-To run the build with tests enabled, some additional steps are needed:
-* JDK 8 must be installed
-* The `rt.jar` must be at the default location (alternatively, place the `rt.jar` inside `$JAVA_HOME/lib/`)
-* The DroidBench submodule must be initialized (clone with `--recursive`)
-* `ANDROID_JARS` environment variable must be set to the android platforms directory (typically `$HOME/Android/Sdk/platforms/`)
-
-### Building The Tool With Eclipse
-
-We work on FlowDroid using the Eclipse IDE. All modules are Eclipse projects and can be imported into the Eclipse IDE. They will appear as Maven projects there and Eclipse should take care of downloading all required dependencies for you.
-
-## Using The Data Flow Tracker
-
-You can use FlowDroid either through its command-line interface (module soot-infoflow-cmd) or as a library. In general, if you would
-like to implement something and need a data flow tracker as a component, you are better off by integrating the FlowDroid modules as
-JAR files. If you just need the results quickly, simply run the command-line interface.
-
-FlowDroid is supported on Windows, Mac OS, and Linux.
-
-### Running The Command-Line Tool
-
-If you want to use the command-line tool to run the data flow tracker, you can use the following command:
+### 编译
 
 ```
-java -jar soot-infoflow-cmd/target/soot-infoflow-cmd-jar-with-dependencies.jar \
-    -a <APK File> \
-    -p <Android JAR folder> \
-    -s <SourcesSinks file>
+mvn -DskipTests=true package
 ```
 
-The Android JAR folder is the "platforms" directory inside your Android SDK installation folder. The definition file for sources
-and sinks defines what shall be treated as a source of sensitive information and what shall be treated as a sink that can possibly
-leak sensitive data to the outside world. These definitions are specific to your use case. However, if you are looking for privacy
-issues, you can use our default file "SourcesAndSinks.txt" in the "soot-infoflow-android" folder as a starting point.
+### 运行
 
-For finding out about the other options of the command-line tool, you can run the tool with the "--help" option or have a look at
-the MainClass.initializeCommandLineOptions()" method in the source code (module soot-infoflow-cmd).
+#### 运行scanner模块
 
-### Configuring FlowDroid for Performance
+```
+java -jar target/check_behaviour-jar-with-dependencies.jar \
+     <Android JAR folder> \
+     <APK File> \
+     <output file>
+```
 
-For some apps, FlowDroid will take very long for large apps. There are various options with which you can configure a tradeoff between performance, precision and recall.
+* <Android JAR folder>：Android SDK 安装文件夹内的 “platforms” 目录。
+* <APK File>：APK文件的位置
+* <Output File>：输出文件位置，文件格式为`json`文件
 
-* ```-ns``` Do not track taints on static fields and disregard static initializers.
-* ```-ne``` Do not track exceptional flows.
+例如
 
-You can also define timeouts:
+```
+java -jar target/check_behaviour-jar-with-dependencies.jar ./platforms BydDiLinkAccount.apk BydDiLinkAccount.json
+```
 
-* ```-dt N``` Aborts the data flow analysis after N seconds and returns the results obtained so far.
-* ```-ct N``` Aborts the callback collection during callgraph construction after N seconds and continues with the (incomplete) callgraph constructed so far.
-* ```-rt N``` Aborts the result collection after N seconds and returns the results obtained so far.
+#### 运行checker模块
 
-Note that timeouts are additive. All three stages must complete or run into a timeout for the tool to return and deliver results.
+```
+java -jar target/check_behaviour-jar-with-dependencies.jar \
+     <Android JAR folder> \
+     <APK File> \
+     <LLM Result File> \
+     <Output File>
+```
 
-### Using FlowDroid as a library
+* <Android JAR folder>：Android SDK 安装文件夹内的 “platforms” 目录。
+* <APK File>：APK文件的位置
+* <JSON File>：大模型分析结果，文件格式为`json`文件
+* <Output File>：输出文件位置，文件格式为`json`文件
 
-If you want to include FlowDroid as a library into your own solution, you can directly reference the respective JAR files. If you
-use Maven, you can add FlowDroid as a reference and have Maven resolve all required components. Depending on what you want to analyze
-(Android apps or Java programs), your dependencies may vary.
+例如
 
-In this section, we will collect code and configuration snippets for common tasks with FlowDroid.
+```
+java -jar target/check_behaviour-jar-with-dependencies.jar ./platforms BydDiLinkAccount.apk BydDiLinkAccount_result.json BydDiLinkAccount_encrypt_result.json
+```
 
-## Publications
-
-If you want to read the details on how FlowDroid works, <a href="http://tuprints.ulb.tu-darmstadt.de/5937/">the PhD thesis of
-Steven Arzt</a> is a good place to start.
-
-## Contributing to FlowDroid
-
-Contributions are always welcome. FlowDroid is an open source project that we published in the hope that it will be useful to
-the research community as a whole. If you have a new feature or a bug fix that you would like to see in the official code
-repository, please open a merge request here on Github and contact us (see below) with a short description of what you have
-done.
-
-## License
-
-FlowDroid is licensed
-under the LGPL license, see LICENSE file. This basically means that you are free to use the tool (even in commercial, closed-source
-projects). However, if you extend or modify the tool, you must make your changes available under the LGPL as well. This ensures that
-we can continue to improve the tool as a community effort.
-
-## Contact
-
-If you experience any issues, you can ask for help on the Soot mailing list. You can also contact us at Steven.Arzt@sit.fraunhofer.de.
