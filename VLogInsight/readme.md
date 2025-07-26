@@ -1,5 +1,15 @@
-## Implementation & Usage Instructions of VLogInsight
+# VLOGINSIGHT: LLM Assisted In-vehicle App Log Privacy Analysis
 
-* As a reference, we open-source a set of highly representative positive and negative examples for few-shot learning, especially those involving vehicle-specific scenarios. 
+We present the corresponding artifacts of our work here for review and verification. Furthermore, we commit to open-sourcing all our work upon acceptance of the paper.
 
-* We commit to open-sourcing the entire implementation of VLogInsight and usage instructions upon the acceptance of our work.
+## Private data Leakage Detection
+
+Here we present the detailed private data leakage detection result in the in-vehicle app logs of the 6 vehicle manufacturers, including:
+
+* User Information
+
+* Vehicle Information
+
+## VLogInsight
+
+Here we present the implementation and usage instructions of VLogInsight.
