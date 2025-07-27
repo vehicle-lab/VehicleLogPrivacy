@@ -5,4 +5,4 @@
 * `soot-infoflow`: This is FlowDroid's core data-flow analysis engine, which operates independently of Android. It implements the IFDS/IDE data-flow analysis framework (via Heros) and defines core concepts such as sources, sinks, and taint propagation rules.
 * `soot-infoflow-android`: This module is built on top of `soot-infoflow` and is specifically tailored to address the complexities of Android applications. It includes comprehensive modeling of the Android lifecycle, specialized handling of the four main components, support for callback mechanisms, resource access tracking, permission enforcement, and more.
 * `soot-infoflow-cmd`: One command-line interface (CLI) is provided to facilitate the execution of FlowDroid.。
-* `soot-infoflow-summaries`: Includes precomputed or configured data flow summaries for common libraries, especially the Android SDK.。
+* `soot-infoflow-summaries`: Includes precomputed or configured data flow summaries for common libraries, especially the Android SDK.
