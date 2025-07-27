@@ -1,4 +1,4 @@
-## Project scheme
+## Scheme
 
 * `scanner`: The core customization module extends FlowDroid using APIs provided by the Soot framework to perform backward data-flow analysis on variables in logging sites, tracing each variable through its associated functions and recording the propagation path.
 * `checker`: The core customization module reads private data identified in logging sites by the LLM, invokes the `scanner` module to retrieve the functions through which the data flows, obtains the corresponding method bodies (Jimple code) as parsed by the FlowDroid framework based on method signatures, and then feeds the method bodies into the LLM to determine whether sanitization operations (e.g., encryption, desensitization, or obfuscation) are applied. This process confirms whether a privacy leakage actually occurs.
